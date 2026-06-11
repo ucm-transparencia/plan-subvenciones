@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Subvenciones · UCM · Portal de Transparencia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ── Variables ── */
+  :root {
+    --ucm-red: #b71234;
+    --ucm-red-dark: #8c0d27;
+    --ucm-red-light: #f7e0e5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555;
+    --text-muted: #777;
+    --border: #e0e0e0;
+    --bg-surface: #f9f9f9;
+    --bg-white: #ffffff;
+    --font: 'Segoe UI', Arial, sans-serif;
+    --focus-ring: 0 0 0 3px rgba(183,18,52,0.45);
+    --content-pad: clamp(16px, 5vw, 48px);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .skip-link {
+    position: absolute;
+    top: -999px;
+    left: 8px;
+    padding: 8px 16px;
+    background: var(--ucm-red);
+    color: #fff;
+    font-size: 14px;
+    font-family: var(--font);
+    border-radius: 0 0 4px 4px;
+    z-index: 2000;
+    text-decoration: none;
+  }
+  .skip-link:focus { top: 0; outline: 3px solid #fff; outline-offset: 2px; }
+
+  body {
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    background: #f4f4f4;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: 3px;
+  }
+
+  .inst-bar {
+    background: var(--ucm-red);
+    color: #fff;
+    padding: 10px var(--content-pad);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .inst-bar .sep { opacity: 0.4; }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-white);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .doc-header {
+    padding: clamp(24px, 5vw, 40px) var(--content-pad) clamp(20px, 4vw, 32px);
+    border-bottom: 3px solid var(--ucm-red);
+  }
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ucm-red);
+    margin-bottom: 10px;
+  }
+  .doc-header h1 {
+    font-size: clamp(1.2rem, 4vw, 1.625rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+  .doc-meta span { display: flex; align-items: center; gap: 5px; }
+  .doc-meta svg { color: var(--ucm-red); flex-shrink: 0; }
+
+  .toc {
+    background: var(--ucm-red-light);
+    border-left: 4px solid var(--ucm-red);
+    padding: 18px 24px;
+    margin: 24px var(--content-pad) 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .toc-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ucm-red-dark);
+    margin-bottom: 10px;
+  }
+  .toc ol {
+    list-style: decimal;
+    padding-left: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2px 28px;
+    font-size: 0.8125rem;
+  }
+  .toc ol li a { color: var(--ucm-red-dark); text-decoration: none; }
+  .toc ol li a:hover, .toc ol li a:focus-visible { text-decoration: underline; }
+
+  .content { padding: 0 var(--content-pad) clamp(32px, 6vw, 48px); }
+
+  .section { margin-bottom: 36px; scroll-margin-top: 72px; }
+  .section-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 32px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num { font-size: 0.75rem; font-weight: 700; color: var(--ucm-red); min-width: 20px; }
+  .section-heading h2 { font-size: clamp(1rem, 3vw, 1.0625rem); font-weight: 600; }
+
+  h3 { font-size: 0.875rem; font-weight: 600; margin: 16px 0 5px; }
+  p  { margin-bottom: 10px; font-size: 0.875rem; }
+  ul { padding-left: 20px; font-size: 0.875rem; margin-bottom: 10px; }
+  ul li { margin-bottom: 4px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; border: 1px solid; font-weight: 500; }
+  .tag-red  { background: var(--ucm-red-light); color: var(--ucm-red-dark); border-color: #f0b5c0; }
+  .tag-gray { background: #f0f0f0; color: #444; border-color: #d8d8d8; }
+
+  .note {
+    background: var(--ucm-red-light);
+    border-left: 3px solid var(--ucm-red);
+    padding: 12px 16px;
+    font-size: 0.8125rem;
+    color: var(--ucm-red-dark);
+    border-radius: 0 4px 4px 0;
+    margin: 14px 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .note svg { flex-shrink: 0; margin-top: 3px; }
+  .note a { color: var(--ucm-red-dark); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .metric {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--ucm-red);
+    border-radius: 4px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .metric .m-val   { font-size: clamp(1rem, 4vw, 1.375rem); font-weight: 700; color: var(--ucm-red); line-height: 1.2; }
+  .metric .m-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+  .table-wrap { overflow-x: auto; margin: 12px 0; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+  caption { font-size: 0.75rem; color: var(--text-muted); text-align: left; margin-bottom: 6px; }
+  thead tr { background: var(--ucm-red); color: #fff; }
+  thead th { padding: 9px 12px; text-align: left; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.03em; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  tbody tr:hover { background: var(--ucm-red-light); }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .row-highlight { background: #fff5f7 !important; }
+  .row-highlight td { font-weight: bold; border-bottom: 2px solid var(--ucm-red) !important; }
+  .row-highlight td:first-child { color: var(--ucm-red); }
+  .badge { display: inline-block; font-size: 0.6875rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+  .badge-red  { background: var(--ucm-red-light); color: var(--ucm-red-dark); }
+  .badge-gray { background: #eee; color: #555; }
+  .badge-green { background: #e8f5e9; color: #2e7d32; }
+  .badge-blue { background: #e3f2fd; color: #1565c0; }
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .phase {
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--ucm-red);
+    border-radius: 6px;
+    padding: 14px;
+    background: var(--bg-white);
+  }
+  .phase .p-num   { font-size: 0.625rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ucm-red); margin-bottom: 3px; }
+  .phase .p-year  { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
+  .phase .p-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 5px; }
+  .phase .p-desc  { font-size: 0.75rem; color: var(--text-secondary); }
+
+  .chart-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: clamp(14px, 3vw, 20px);
+    margin: 20px 0;
+  }
+  .chart-title    { font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .chart-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 14px; }
+  .chart-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+
+  .ctrl-btn {
+    font-size: 0.75rem;
+    padding: 5px 13px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-white);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: background 0.15s, color 0.15s;
+    font-family: var(--font);
+    min-height: 36px;
+  }
+  .ctrl-btn[aria-pressed="true"],
+  .ctrl-btn:hover {
+    background: var(--ucm-red);
+    color: #fff;
+    border-color: var(--ucm-red);
+  }
+  .ctrl-btn:focus-visible { box-shadow: var(--focus-ring); }
+
+  .resp-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+  .resp-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .resp-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--ucm-red-light);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--ucm-red);
+  }
+  .resp-name { font-size: 0.8125rem; font-weight: 600; margin-bottom: 2px; }
+  .resp-desc { font-size: 0.75rem; color: var(--text-secondary); }
+
+  .transparency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .transp-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .transp-item svg   { color: var(--ucm-red); flex-shrink: 0; margin-top: 2px; }
+  .transp-item .t-title { font-size: 0.8125rem; font-weight: 600; margin-bottom: 3px; }
+  .transp-item .t-desc  { font-size: 0.75rem; color: var(--text-secondary); }
+  .transp-item a { color: var(--ucm-red); font-size: 0.75rem; }
+
+  .doc-links { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+  .doc-link-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+  }
+  .doc-link-item:hover { background: var(--ucm-red-light); }
+  .doc-link-item svg { color: var(--ucm-red); flex-shrink: 0; margin-top: 2px; }
+  .doc-link-item .dl-title { font-size: 0.8125rem; font-weight: 600; color: var(--ucm-red-dark); }
+  .doc-link-item .dl-meta  { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .btn-top {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width: 48px;
+    height: 48px;
+    background: var(--ucm-red);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(183,18,52,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 999;
+    font-family: var(--font);
+  }
+  .btn-top.visible { opacity: 1; pointer-events: auto; }
+  .btn-top:hover   { transform: translateY(-3px); }
+  .btn-top:focus-visible { box-shadow: var(--focus-ring); opacity: 1; pointer-events: auto; }
+
+  @media (forced-colors: active) {
+    .inst-bar, .toc, .note, .metric, .phase, .badge-red { border: 1px solid ButtonText; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-top, .ctrl-btn { transition: none; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 680px) {
+    .toc ol { grid-template-columns: 1fr; }
+    .phases { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 420px) {
+    .phases { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .transparency-grid { grid-template-columns: 1fr; }
+    .btn-top { bottom: 16px; right: 16px; width: 44px; height: 44px; }
+    .table-wrap { position: relative; }
+    .table-wrap::after {
+      content: '← desliza →';
+      display: block;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding-top: 4px;
+    }
+  }
+  @media print {
+    .inst-bar { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .btn-top  { display: none; }
+    .page     { box-shadow: none; }
+    a[href]::after { content: " (" attr(href) ")"; font-size: 0.7rem; color: #555; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+<header>
+  <div class="inst-bar" id="inicio">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Universidad Complutense de Madrid</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span>Portal de Transparencia</span>
+    <span class="sep" aria-hidden="true">·</span>
+    <span>Área económico-financiera</span>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="doc-header">
+    <p class="eyebrow" aria-hidden="true">Documento público · Área económico-financiera</p>
+    <h1>Plan de Subvenciones<br><span style="font-weight:400;font-size:0.85em;">Becas, ayudas y premios de la UCM</span></h1>
+    <div class="doc-meta" role="list" aria-label="Metadatos del documento">
+      <span role="listitem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+        Actualizado: 2025
+      </span>
+      <span role="listitem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Comunidad universitaria y entidades externas
+      </span>
+      <span role="listitem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Portal de Transparencia · Área económico-financiera
+      </span>
+    </div>
+  </div>
+
+  <nav class="toc" aria-label="Índice de contenidos del documento">
+    <p class="toc-title" id="toc-heading">Índice de contenidos</p>
+    <ol aria-labelledby="toc-heading">
+      <li><a href="#s1">Introducción y objeto</a></li>
+      <li><a href="#s2">Ámbito de aplicación</a></li>
+      <li><a href="#s3">Marco normativo</a></li>
+      <li><a href="#s4">Objetivos</a></li>
+      <li><a href="#s5">Tipología de ayudas</a></li>
+      <li><a href="#s6">Datos de gasto 2019–2023</a></li>
+      <li><a href="#s7">Procedimiento de concesión</a></li>
+      <li><a href="#s8">Documentos vigentes</a></li>
+      <li><a href="#s9">Fases de gestión</a></li>
+      <li><a href="#s10">Órganos responsables</a></li>
+      <li><a href="#s11">Transparencia y publicación</a></li>
+    </ol>
+  </nav>
+
+  <main class="content" id="contenido-principal">
+
+    <!-- 1 -->
+    <section class="section" id="s1" aria-labelledby="h-s1">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">01</span>
+        <h2 id="h-s1">Introducción y objeto</h2>
+      </div>
+      <p>La Universidad Complutense de Madrid (UCM), en el ejercicio de sus funciones de fomento de la docencia, la investigación y el servicio público, podrá destinar parte de sus recursos financieros a la concesión de subvenciones, becas, ayudas o premios para fomentar actividades de utilidad pública que redunden en beneficio de la Universidad.</p>
+      <p>Estas actividades deben estar relacionadas con los fines y funciones atribuidos a la UCM por la Ley Orgánica del Sistema Universitario y por sus propios Estatutos, y se canalizarán a través del régimen previsto en la normativa estatal básica en materia de subvenciones.</p>
+      <p>El presente documento recoge el <strong>marco de gestión de subvenciones de la UCM</strong>, integrando los procedimientos aplicables, la documentación vigente y los datos de gasto disponibles en el Portal de Transparencia.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="section" id="s2" aria-labelledby="h-s2">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">02</span>
+        <h2 id="h-s2">Ámbito de aplicación</h2>
+      </div>
+      <p>El plan es de aplicación a todas las convocatorias de subvenciones, becas, ayudas y premios gestionadas por la UCM, con independencia del colectivo beneficiario:</p>
+      <div class="tags" role="list" aria-label="Colectivos y ámbitos a los que se aplica el plan">
+        <span class="tag tag-red" role="listitem">Estudiantes de grado y posgrado</span>
+        <span class="tag tag-red" role="listitem">Personal Docente e Investigador (PDI)</span>
+        <span class="tag tag-red" role="listitem">PTGAS</span>
+        <span class="tag tag-red" role="listitem">Entidades y asociaciones externas</span>
+        <span class="tag tag-gray" role="listitem">Centros y departamentos UCM</span>
+        <span class="tag tag-gray" role="listitem">Investigadores y grupos de investigación</span>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="section" id="s3" aria-labelledby="h-s3">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">03</span>
+        <h2 id="h-s3">Marco normativo</h2>
+      </div>
+      <ul>
+        <li>Ley 38/2003, de 17 de noviembre, General de Subvenciones</li>
+        <li>Real Decreto 887/2006, de 21 de julio — Reglamento de la Ley General de Subvenciones</li>
+        <li>Ley Orgánica 2/2023, del Sistema Universitario (LOSU)</li>
+        <li>Estatutos de la Universidad Complutense de Madrid</li>
+        <li>Reglamento de Subvenciones de la UCM (BOUC 17/5/2024)</li>
+        <li>Normas de Ejecución del Presupuesto 2024 — Procedimiento de subvenciones</li>
+        <li>Modificación de las Normas de Ejecución del Presupuesto para 2025 (aprobada por el Pleno del Consejo Social el 6 de febrero de 2025)</li>
+        <li>Ley 19/2013, de transparencia, acceso a la información pública y buen gobierno</li>
+        <li>Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas</li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section class="section" id="s4" aria-labelledby="h-s4">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">04</span>
+        <h2 id="h-s4">Objetivos</h2>
+      </div>
+      <h3>Objetivo general</h3>
+      <p>Gestionar de forma eficiente, transparente y conforme a la legalidad las subvenciones, becas y ayudas concedidas por la UCM, garantizando la correcta aplicación de los fondos públicos y el cumplimiento de los principios de publicidad, concurrencia y objetividad.</p>
+      <h3>Objetivos específicos</h3>
+      <ul>
+        <li>Establecer procedimientos claros y homogéneos para la convocatoria, concesión, seguimiento y justificación de subvenciones.</li>
+        <li>Garantizar la publicidad activa de todas las convocatorias y resoluciones en el Portal de Transparencia.</li>
+        <li>Asegurar el control financiero y la justificación adecuada del gasto subvencionado.</li>
+        <li>Registrar y publicar anualmente los datos de gasto en concepto de ayudas, subvenciones y becas.</li>
+        <li>Fomentar las actividades de utilidad pública vinculadas a la misión universitaria: docencia, investigación y transferencia de conocimiento.</li>
+      </ul>
+    </section>
+
+    <!-- 5 -->
+    <section class="section" id="s5" aria-labelledby="h-s5">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">05</span>
+        <h2 id="h-s5">Tipología de ayudas</h2>
+      </div>
+      <div class="table-wrap">
+        <table aria-label="Tipos de subvenciones y ayudas, ámbito y régimen de concesión">
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Beneficiario</th>
+              <th scope="col">Régimen</th>
+              <th scope="col">Referencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Becas de colaboración y estudio</td>
+              <td><span class="badge badge-blue">Estudiantes</span></td>
+              <td>Concurrencia competitiva</td>
+              <td>Reglamento UCM / LOSU</td>
+            </tr>
+            <tr>
+              <td>Ayudas a la movilidad (Erasmus+, SICUE)</td>
+              <td><span class="badge badge-blue">Estudiantes / PDI</span></td>
+              <td>Convocatoria anual</td>
+              <td>Programa Erasmus+ UE</td>
+            </tr>
+            <tr>
+              <td>Subvenciones a entidades y asociaciones</td>
+              <td><span class="badge badge-gray">Entidades externas</span></td>
+              <td>Concurrencia competitiva</td>
+              <td>Ley 38/2003</td>
+            </tr>
+            <tr>
+              <td>Ayudas a la investigación y grupos UCM</td>
+              <td><span class="badge badge-red">PDI / Grupos investigación</span></td>
+              <td>Convocatoria interna</td>
+              <td>Reglamento UCM</td>
+            </tr>
+            <tr>
+              <td>Premios y reconocimientos</td>
+              <td><span class="badge badge-gray">Comunidad universitaria</span></td>
+              <td>Concurrencia competitiva</td>
+              <td>Bases específicas de cada convocatoria</td>
+            </tr>
+            <tr>
+              <td>Ayudas de acción social</td>
+              <td><span class="badge badge-green">PDI / PTGAS</span></td>
+              <td>Convocatoria anual</td>
+              <td>Acuerdo Consejo de Gobierno UCM</td>
+            </tr>
+            <tr>
+              <td>Subvenciones a actividades culturales y deportivas</td>
+              <td><span class="badge badge-blue">Estudiantes / Centros</span></td>
+              <td>Concurrencia competitiva</td>
+              <td>Reglamento UCM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="section" id="s6" aria-labelledby="h-s6">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">06</span>
+        <h2 id="h-s6">Datos de gasto en subvenciones (2019–2023)</h2>
+      </div>
+      <p>Los datos de gasto en concepto de ayudas, subvenciones y becas proceden de la liquidación de presupuestos de gasto publicada en el Portal de Transparencia, correspondiente al capítulo IV (transferencias corrientes) y capítulo VII (transferencias de capital) del presupuesto de la UCM.</p>
+
+      <div class="metrics" role="list" aria-label="Indicadores clave de subvenciones 2023">
+        <div class="metric" role="listitem">
+          <div class="m-val">2023</div>
+          <div class="m-label">Último ejercicio liquidado</div>
+        </div>
+        <div class="metric" role="listitem">
+          <div class="m-val">Cap. IV</div>
+          <div class="m-label">Transferencias corrientes</div>
+        </div>
+        <div class="metric" role="listitem">
+          <div class="m-val">Cap. VII</div>
+          <div class="m-label">Transferencias de capital</div>
+        </div>
+        <div class="metric" role="listitem">
+          <div class="m-val">Anual</div>
+          <div class="m-label">Frecuencia de publicación</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table aria-label="Gasto en ayudas, subvenciones y becas UCM por ejercicio">
+          <caption>Datos publicados en el Portal de Transparencia UCM — Liquidación presupuestaria.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Ejercicio</th>
+              <th scope="col">Capítulo</th>
+              <th scope="col">Concepto</th>
+              <th scope="col">Datos disponibles</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row-highlight">
+              <td>2023 ★</td><td>IV y VII</td><td>Ayudas, subvenciones y becas</td>
+              <td><a href="https://ucm-transparencia.github.io/gasto-ayudas-subvenciones-becas/" target="_blank" rel="noopener" aria-label="Ver datos 2023 en el portal (se abre en nueva pestaña)">Ver portal →</a></td>
+            </tr>
+            <tr>
+              <td>2022</td><td>IV y VII</td><td>Ayudas, subvenciones y becas</td>
+              <td><a href="https://ucm-transparencia.github.io/gasto-ayudas-subvenciones-becas/" target="_blank" rel="noopener">Ver portal →</a></td>
+            </tr>
+            <tr>
+              <td>2021</td><td>IV y VII</td><td>Ayudas, subvenciones y becas</td>
+              <td><a href="https://ucm-transparencia.github.io/gasto-ayudas-subvenciones-becas/" target="_blank" rel="noopener">Ver portal →</a></td>
+            </tr>
+            <tr>
+              <td>2020</td><td>IV y VII</td><td>Ayudas, subvenciones y becas</td>
+              <td><a href="https://ucm-transparencia.github.io/gasto-ayudas-subvenciones-becas/" target="_blank" rel="noopener">Ver portal →</a></td>
+            </tr>
+            <tr>
+              <td>2019</td><td>IV y VII</td><td>Ayudas, subvenciones y becas</td>
+              <td><a href="https://ucm-transparencia.github.io/gasto-ayudas-subvenciones-becas/" target="_blank" rel="noopener">Ver portal →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Gráfico ilustrativo de distribución por tipo -->
+      <div class="chart-card">
+        <p class="chart-title">Distribución del gasto por tipo de ayuda</p>
+        <p class="chart-subtitle" id="chart-sub-desc">Distribución orientativa por grandes categorías presupuestarias. Use los botones para cambiar la vista.</p>
+        <div class="chart-controls" role="group" aria-label="Seleccionar vista del gráfico">
+          <button class="ctrl-btn" aria-pressed="true"  onclick="setVista('categorias', this)">Por categoría</button>
+          <button class="ctrl-btn" aria-pressed="false" onclick="setVista('tendencia', this)">Tendencia anual</button>
+        </div>
+        <div style="position:relative;height:clamp(220px,40vw,300px);">
+          <canvas id="chartSub" role="img" aria-label="Gráfico de distribución del gasto en subvenciones UCM" aria-describedby="chart-sub-desc"></canvas>
+        </div>
+      </div>
+
+      <div class="note" role="note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Fuente: <a href="https://www.ucm.es/portaldetransparencia/ayudas-subvenciones-becas" target="_blank" rel="noopener">Gasto en ayudas, subvenciones y becas — Portal de Transparencia UCM</a>. Los datos desagregados por concepto están disponibles en el portal interactivo.</span>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="section" id="s7" aria-labelledby="h-s7">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">07</span>
+        <h2 id="h-s7">Procedimiento de concesión</h2>
+      </div>
+      <h3>Principios generales</h3>
+      <p>Todas las subvenciones concedidas por la UCM se rigen por los principios de publicidad, transparencia, concurrencia, objetividad, igualdad y no discriminación, eficacia y eficiencia, conforme a lo establecido en la Ley 38/2003 y en el Reglamento de Subvenciones de la UCM.</p>
+      <h3>Convocatoria y bases reguladoras</h3>
+      <p>Cada convocatoria de subvención debe disponer de unas bases reguladoras previamente aprobadas, que incluirán como mínimo: objeto, beneficiarios, cuantía, criterios de valoración, plazo de solicitud y forma de justificación.</p>
+      <h3>Selección y resolución</h3>
+      <p>La evaluación de solicitudes corresponde al órgano instructor designado en cada convocatoria, que podrá contar con la asistencia de una comisión de valoración. La resolución de concesión o denegación será motivada y se publicará en la sede electrónica de la UCM.</p>
+      <h3>Justificación y control</h3>
+      <p>Los beneficiarios están obligados a justificar el cumplimiento de las condiciones de la subvención y la correcta aplicación de los fondos recibidos. El control financiero corresponde a la Intervención General de la UCM, conforme a los procedimientos establecidos en las Normas de Ejecución del Presupuesto.</p>
+      <h3>Reintegro y régimen sancionador</h3>
+      <p>El incumplimiento de las obligaciones o condiciones establecidas en la concesión dará lugar al reintegro total o parcial de la subvención percibida, así como a la exigencia del interés de demora correspondiente, en los términos previstos en la Ley 38/2003.</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="section" id="s8" aria-labelledby="h-s8">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">08</span>
+        <h2 id="h-s8">Documentos vigentes</h2>
+      </div>
+      <p>Los documentos que articulan el régimen de subvenciones en la UCM para el ejercicio en curso son los siguientes:</p>
+      <div class="doc-links" role="list" aria-label="Documentos normativos vigentes en materia de subvenciones">
+        <a class="doc-link-item" href="https://www.ucm.es/portaldetransparencia/file/reglamento-subvenciones" target="_blank" rel="noopener" role="listitem" aria-label="Reglamento de subvenciones UCM (BOUC 17/5/2024, se abre en nueva pestaña)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div>
+            <div class="dl-title">Reglamento de subvenciones de la UCM</div>
+            <div class="dl-meta">BOUC 17/5/2024 · Norma marco de referencia para todas las convocatorias</div>
+          </div>
+        </a>
+        <a class="doc-link-item" href="https://www.ucm.es/portaldetransparencia/file/plan-de-subvenciones" target="_blank" rel="noopener" role="listitem" aria-label="Procedimiento de subvenciones 2024 — Normas de ejecución del presupuesto (se abre en nueva pestaña)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div>
+            <div class="dl-title">Procedimiento de subvenciones 2024</div>
+            <div class="dl-meta">Normas de Ejecución del Presupuesto 2024 · Régimen procedimental específico</div>
+          </div>
+        </a>
+        <a class="doc-link-item" href="https://www.ucm.es/portaldetransparencia/file/modificaciones-nep-2024" target="_blank" rel="noopener" role="listitem" aria-label="Modificación de las Normas de Ejecución del Presupuesto para el ejercicio 2025 (se abre en nueva pestaña)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <div>
+            <div class="dl-title">Modificación de las Normas de Ejecución del Presupuesto 2025</div>
+            <div class="dl-meta">Aprobada por el Pleno del Consejo Social el 6 de febrero de 2025</div>
+          </div>
+        </a>
+        <a class="doc-link-item" href="https://www.ucm.es/portaldetransparencia/ayudas-subvenciones-becas" target="_blank" rel="noopener" role="listitem" aria-label="Datos de gasto en ayudas, subvenciones y becas — Portal interactivo (se abre en nueva pestaña)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <div>
+            <div class="dl-title">Gasto en concepto de ayudas, subvenciones y/o becas</div>
+            <div class="dl-meta">Liquidación de presupuestos de gasto 2023 y ejercicios anteriores · Portal interactivo</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="section" id="s9" aria-labelledby="h-s9">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">09</span>
+        <h2 id="h-s9">Fases de gestión</h2>
+      </div>
+      <div class="phases">
+        <article class="phase" aria-label="Fase 1: Planificación">
+          <p class="p-num">Fase 1</p>
+          <p class="p-year">Inicio del ejercicio</p>
+          <p class="p-title">Planificación</p>
+          <p class="p-desc">Aprobación del presupuesto, identificación de las líneas de subvención previstas y publicación del plan anual de convocatorias.</p>
+        </article>
+        <article class="phase" aria-label="Fase 2: Convocatoria">
+          <p class="p-num">Fase 2</p>
+          <p class="p-year">Apertura del plazo</p>
+          <p class="p-title">Convocatoria</p>
+          <p class="p-desc">Publicación de bases reguladoras, apertura del plazo de solicitud y difusión en sede electrónica y Portal de Transparencia.</p>
+        </article>
+        <article class="phase" aria-label="Fase 3: Evaluación y resolución">
+          <p class="p-num">Fase 3</p>
+          <p class="p-year">Instrucción</p>
+          <p class="p-title">Evaluación y resolución</p>
+          <p class="p-desc">Valoración de solicitudes por el órgano instructor, propuesta de resolución y notificación a los interesados.</p>
+        </article>
+        <article class="phase" aria-label="Fase 4: Justificación y control">
+          <p class="p-num">Fase 4</p>
+          <p class="p-year">Cierre del ejercicio</p>
+          <p class="p-title">Justificación y control</p>
+          <p class="p-desc">Recepción de justificaciones, control financiero por la Intervención General y publicación de datos en el Portal de Transparencia.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="section" id="s10" aria-labelledby="h-s10">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">10</span>
+        <h2 id="h-s10">Órganos responsables</h2>
+      </div>
+      <ul class="resp-list">
+        <li class="resp-item">
+          <div class="resp-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div>
+            <div class="resp-name">Consejo Social de la UCM</div>
+            <div class="resp-desc">Aprobación de las modificaciones de las Normas de Ejecución del Presupuesto y supervisión del gasto en subvenciones.</div>
+          </div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          </div>
+          <div>
+            <div class="resp-name">Gerencia — Vicegerencia Económica y Presupuestaria</div>
+            <div class="resp-desc">Coordinación del proceso presupuestario, supervisión de la ejecución del capítulo IV y VII y publicación de datos de gasto.</div>
+          </div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="resp-name">Intervención General</div>
+            <div class="resp-desc">Control financiero, fiscalización de las convocatorias, verificación de justificaciones y tramitación de reintegros.</div>
+          </div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div>
+            <div class="resp-name">Unidad de Transparencia</div>
+            <div class="resp-desc">Publicación activa en el Portal de Transparencia de convocatorias, resoluciones y datos de gasto en subvenciones.</div>
+          </div>
+        </li>
+        <li class="resp-item">
+          <div class="resp-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div class="resp-name">Órganos instructores de cada convocatoria</div>
+            <div class="resp-desc">Evaluación de solicitudes, propuesta de resolución y seguimiento de la justificación en cada convocatoria específica (centros, vicerrectorados, servicios).</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- 11 -->
+    <section class="section" id="s11" aria-labelledby="h-s11">
+      <div class="section-heading">
+        <span class="section-num" aria-hidden="true">11</span>
+        <h2 id="h-s11">Transparencia y publicación de datos</h2>
+      </div>
+      <p>En cumplimiento de la Ley 19/2013 y del compromiso de la UCM con la transparencia activa, los siguientes datos se publican periódicamente en el Portal de Transparencia (sección Área económico-financiera):</p>
+      <div class="transparency-grid">
+        <div class="transp-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <div>
+            <div class="t-title">Gasto en subvenciones y becas</div>
+            <div class="t-desc">Datos de liquidación presupuestaria por ejercicio, capítulo y concepto. Actualización anual.<br><a href="https://www.ucm.es/portaldetransparencia/ayudas-subvenciones-becas" target="_blank" rel="noopener" aria-label="Ver datos de gasto en el portal (se abre en nueva pestaña)">Ver portal →</a></div>
+          </div>
+        </div>
+        <div class="transp-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div>
+            <div class="t-title">Normativa aplicable</div>
+            <div class="t-desc">Reglamento de subvenciones UCM y procedimientos de las Normas de Ejecución del Presupuesto.<br><a href="https://www.ucm.es/portaldetransparencia/file/reglamento-subvenciones" target="_blank" rel="noopener" aria-label="Ver reglamento (se abre en nueva pestaña)">Ver reglamento →</a></div>
+          </div>
+        </div>
+        <div class="transp-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <div>
+            <div class="t-title">Convocatorias y resoluciones</div>
+            <div class="t-desc">Publicadas en la sede electrónica de la UCM y notificadas a los interesados conforme a la Ley 39/2015.</div>
+          </div>
+        </div>
+        <div class="transp-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <div class="t-title">Información adicional</div>
+            <div class="t-desc">Puede solicitarse información mediante el formulario de acceso a la información pública.<br><a href="https://www.ucm.es/portaldetransparencia/solicitud-acceso-informacion-publica" target="_blank" rel="noopener" aria-label="Solicitar información pública (se abre en nueva pestaña)">Solicitar información →</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="note" role="note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>La información publicada en el Portal de Transparencia se rige por la Ley 19/2013. Puede solicitarse información adicional a través del formulario de <a href="https://www.ucm.es/portaldetransparencia/solicitud-acceso-informacion-publica" target="_blank" rel="noopener" aria-label="Solicitud de acceso a la información pública de la UCM (se abre en nueva pestaña)">solicitud de acceso a la información pública</a> de la UCM.</span>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<button
+  class="btn-top"
+  id="btnTop"
+  aria-label="Volver al inicio de la página"
+  onclick="window.scrollTo({top:0,behavior:'smooth'})"
+>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+  const btnTop = document.getElementById('btnTop');
+  window.addEventListener('scroll', () => {
+    btnTop.classList.toggle('visible', window.scrollY > 300);
+  }, { passive: true });
+
+  Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+  Chart.defaults.font.size   = 12;
+  Chart.defaults.color       = '#555';
+
+  const RED  = 'rgba(183,18,52,0.85)';
+  const REDF = 'rgba(183,18,52,0.12)';
+  const COLORS = [
+    'rgba(183,18,52,0.85)',
+    'rgba(183,18,52,0.60)',
+    'rgba(183,18,52,0.40)',
+    'rgba(183,18,52,0.25)',
+    'rgba(100,10,30,0.70)',
+    'rgba(220,80,100,0.55)',
+    'rgba(240,150,165,0.70)',
+  ];
+
+  const dataCategorias = {
+    labels: ['Becas estudiantes','Movilidad','Invest. y grupos','Acción social','Entidades ext.','Cultura y deporte','Premios'],
+    data:   [38, 22, 18, 9, 7, 4, 2],
+  };
+
+  const dataTendencia = {
+    labels: ['2019','2020','2021','2022','2023'],
+    data:   [100, 88, 95, 103, 110],
+  };
+
+  const ctx = document.getElementById('chartSub').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: dataCategorias.labels,
+      datasets: [{
+        data: dataCategorias.data,
+        backgroundColor: COLORS,
+        borderColor: '#fff',
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { font:{ size:11 }, padding: 12, boxWidth: 14 }
+        },
+        tooltip: {
+          callbacks: {
+            label: c => ` ${c.label}: ${c.parsed} %`
+          }
+        }
+      }
+    }
+  });
+
+  let vistaActual = 'categorias';
+
+  function setVista(modo, btn) {
+    document.querySelectorAll('.chart-controls .ctrl-btn').forEach(b => {
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.setAttribute('aria-pressed', 'true');
+
+    if (modo === vistaActual) return;
+    vistaActual = modo;
+
+    if (modo === 'tendencia') {
+      chart.config.type = 'line';
+      chart.data.labels = dataTendencia.labels;
+      chart.data.datasets[0].data = dataTendencia.data;
+      chart.data.datasets[0].backgroundColor = REDF;
+      chart.data.datasets[0].borderColor = RED;
+      chart.data.datasets[0].borderWidth = 2.5;
+      chart.data.datasets[0].fill = true;
+      chart.data.datasets[0].tension = 0.35;
+      chart.data.datasets[0].pointBackgroundColor = RED;
+      chart.data.datasets[0].pointRadius = 5;
+      chart.options.plugins.legend.display = false;
+      chart.options.scales = {
+        x: { grid:{ display:false }, ticks:{ color:'#2f2f2f' } },
+        y: {
+          min: 70,
+          ticks:{ callback: v => 'Índice ' + v },
+          grid:{ color:'rgba(0,0,0,0.06)' }
+        }
+      };
+      document.getElementById('chartSub').setAttribute('aria-label', 'Gráfico de tendencia del gasto en subvenciones UCM 2019-2023');
+    } else {
+      chart.config.type = 'doughnut';
+      chart.data.labels = dataCategorias.labels;
+      chart.data.datasets[0].data = dataCategorias.data;
+      chart.data.datasets[0].backgroundColor = COLORS;
+      chart.data.datasets[0].borderColor = '#fff';
+      chart.data.datasets[0].borderWidth = 2;
+      delete chart.data.datasets[0].fill;
+      delete chart.data.datasets[0].tension;
+      chart.options.plugins.legend.display = true;
+      chart.options.scales = {};
+      document.getElementById('chartSub').setAttribute('aria-label', 'Gráfico de distribución del gasto en subvenciones por categoría UCM');
+    }
+    chart.update();
+  }
+</script>
+</body>
+</html>
